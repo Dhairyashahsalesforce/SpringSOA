@@ -1,0 +1,46 @@
+/*
+* Created By: Dhairya Shah
+* Desc: Calculate total number of contacts present on particular contact
+* Date: 18th July 2018
+* Company: Spring SOA
+*/
+trigger AllContactSumTrigger on Contact (After insert, After Delete, After Update) {
+    
+    Set<id> setOfAccs = new Set<Id>(); //Set of account id
+    List<Account> listOfAccountToUpdate = new List<Account>(); //List of Account which needs to be update
+    
+    //IS AFTER INSERT AND IS AFTER UPDATE
+    if(Trigger.isAfter && (Trigger.isInsert || Trigger.isUpdate)){
+        
+        for(Contact objCon : Trigger.NEW){
+            if(objCon.AccountId!=NULL){
+                setOfAccs.add(objCon.AccountId); //Adding Account id's into the newly created Set of Id's
+            }
+        }
+        
+    }
+    
+    //IS AFTER DELETE 
+    if(Trigger.isAfter && Trigger.isDelete){
+        for(Contact objConDelete : Trigger.OLD){
+            if(objConDelete.AccountId!=NULL){
+                setOfAccs.add(objConDelete.AccountId);
+            }
+        }
+    }
+    
+    List<Account> listOfAccount = new List<Account>([SELECT id,Number_Of_Contacts__c,(SELECT id FROM Contacts) 
+                                                     FROM Account WHERE id IN:setOfAccs]);
+    
+    // For loop on Account to update number of Contacts
+    for(Account objAcc : listOfAccount){
+        List<Contact> contactList = objAcc.Contacts;
+        objAcc.Number_of_Contacts__c = contactList.size();
+        listOfAccountToUpdate.add(objAcc);
+    }
+    
+    if(listOfAccountToUpdate!=NULL && listOfAccountToUpdate.size()>0){
+        update listOfAccountToUpdate;
+    }
+    
+}

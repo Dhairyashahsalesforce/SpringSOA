@@ -1,0 +1,12 @@
+/*
+* Created By: Dhairya Shah
+* Desc: List of Account which will show upto 10 new created records
+* Date: 18th July 2018
+* Company: Spring SOA
+*/
+public class AccountListController {
+    @AuraEnabled
+    public static List <Account> getAccounts() {
+        return [SELECT Id, name, industry, Type, NumberOfEmployees, TickerSymbol, Phone, CreatedDate FROM Account ORDER BY createdDate ASC LIMIT 10];
+    }
+}
